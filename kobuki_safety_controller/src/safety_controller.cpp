@@ -72,12 +72,12 @@ SafetyController::SafetyController(const rclcpp::NodeOptions & options) :
   cliff_left_detected_(false),
   cliff_center_detected_(false),
   cliff_right_detected_(false),
-  time_to_extend_bump_cliff_events_(rclcpp::Duration(0.0)),
+  time_to_extend_bump_cliff_events_(rclcpp::Duration::from_nanoseconds(0.0)),
   last_event_time_(this->get_clock()->now())
 {
   //how long to keep sending messages after a bump, cliff, or wheel drop stops
   double time_to_extend_bump_cliff_events = this->declare_parameter("time_to_extend_bump_cliff_events", 0.0);
-  time_to_extend_bump_cliff_events_ = rclcpp::Duration(time_to_extend_bump_cliff_events);
+  time_to_extend_bump_cliff_events_ = rclcpp::Duration::from_nanoseconds(time_to_extend_bump_cliff_events);
 
   enable_controller_subscriber_ = this->create_subscription<std_msgs::msg::Empty>("enable", rclcpp::QoS(10), std::bind(&SafetyController::enableCB, this, std::placeholders::_1));
   disable_controller_subscriber_ = this->create_subscription<std_msgs::msg::Empty>("disable", rclcpp::QoS(10), std::bind(&SafetyController::disableCB, this, std::placeholders::_1));
@@ -306,7 +306,7 @@ void SafetyController::spin()
     else
     {
       // if we want to extend the safety state and we're within the time, just keep sending msg_
-      if (time_to_extend_bump_cliff_events_ > rclcpp::Duration(1e-10) &&
+      if (time_to_extend_bump_cliff_events_ > rclcpp::Duration::from_nanoseconds(1e-10) &&
           this->get_clock()->now() - last_event_time_ < time_to_extend_bump_cliff_events_)
       {
         velocity_command_publisher_->publish(*msg_);
@@ -332,7 +332,7 @@ rcl_interfaces::msg::SetParametersResult SafetyController::parameterUpdate(
         break;
       }
       double time_to_extend_bump_cliff_events = parameter.get_value<double>();
-      time_to_extend_bump_cliff_events_ = rclcpp::Duration(time_to_extend_bump_cliff_events);
+      time_to_extend_bump_cliff_events_ = rclcpp::Duration::from_nanoseconds(time_to_extend_bump_cliff_events);
     }
     else
     {
